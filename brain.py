@@ -5,6 +5,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import instructor
 from concurrent.futures import ProcessPoolExecutor, as_completed
+import streamlit as st
 
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -26,7 +27,7 @@ API_BASE_URL = "https://curius.app/api"
 USER_ID = 2922
 BATCH_SIZE = 50
 
-client = instructor.from_openai(OpenAI())
+client = instructor.from_openai(OpenAI(st.secrets['OPENAI_API_KEY']))
 
 HEADERS = {
     "Content-Type": "application/json",
