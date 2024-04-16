@@ -160,7 +160,7 @@ def process(user_id, empty_links=True, progress=None):
     total_batches = (len(links) + BATCH_SIZE - 1) // BATCH_SIZE
 
     for i in range(0, len(links), BATCH_SIZE):
-        if progress:
+        if progress and i != 0:
             progress_value = i // BATCH_SIZE / total_batches
             progress.progress(progress_value, text="Calling OpenAI to categorize your links")
 
