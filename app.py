@@ -64,6 +64,7 @@ def main():
                 "url": st.column_config.LinkColumn("url", display_text="🔗")
             },
             hide_index=True,
+            use_container_width=True,
         )
 
         # Added help text to the Authorization Token input area
