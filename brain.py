@@ -119,7 +119,7 @@ def categorize_text(texts, topics) -> Categorization:
 
       Please list the results in a python array format to be used for post-processing:
       [(id, [topic1, topic2]), (id, [topic])]
-    
+
       Snippets
       `
       {texts}
