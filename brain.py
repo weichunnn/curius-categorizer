@@ -5,14 +5,15 @@ import instructor
 import requests
 import streamlit as st
 from openai import OpenAI
+from pydantic import BaseModel
+
+from constant import API_BASE_URL, BATCH_SIZE, HEADERS, PARALLEL_WORKER_COUNT
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)
-
-from pydantic import BaseModel
 
 
 class Snippet(BaseModel):
@@ -24,15 +25,7 @@ class Categorization(BaseModel):
     snippets: list[Snippet]
 
 
-API_BASE_URL = "https://curius.app/api"
-BATCH_SIZE = 50
-
 client = instructor.from_openai(OpenAI(api_key=st.secrets["OPENAI_API_KEY"]))
-
-HEADERS = {
-    "Content-Type": "application/json",
-    "Authorization": "REPLACE_WITH_YOUR_OWN",
-}
 
 
 def fetch_links(page, user_id):
@@ -51,7 +44,7 @@ def fetch_links(page, user_id):
 def fetch_links_multiprocessing(user_id):
     """Fetches all links from the API using multiprocessing."""
     result = []
-    max_workers = 10  # Adjust based on your system and network capacity
+    max_workers = PARALLEL_WORKER_COUNT
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Start with an initial set of pages
@@ -111,22 +104,26 @@ def categorize_text(texts, topics) -> Categorization:
     """Uses OpenAI to classify multiple texts in a single API call by comparing with existing topics, expects structured output"""
 
     prompt = f"""
-      Given the following topics: {topics}.
+      You are a very knowledgeable assistant who's an expert at summarizing text into categories based on the context given to you.
+      Given the following topics: {topics}, categorize each of the snippet to 1 or multiple tags based on each snippet's details.
 
-      What topics best match each of these texts? If there are existing topics, retain it in the final result.
+      Keep in mind
+      - If there are existing topics already provided, retain it in the final result.
+      - Favor existing topics if possible as we do not want to create multiple similar ones.
+      - You are allowed to create a new topic if and only if existing input topics do not fit.
+      - At most 3 topics can be assigned to each snippet.
 
-      **Criteria**
+      Result
       - Each snippet MUST have at least 1 topic.
-      - Create a new topic if existing input topics do not fit.
-      - At most 3 topics can be assigned.
-
-      **Result**
-      - Only return the results that have changes
+      - Only return the snippets that have new or updates topics
 
       Please list the results in a python array format to be used for post-processing:
       [(id, [topic1, topic2]), (id, [topic])]
-
+    
+      Snippets
+      `
       {texts}
+      `
     """
 
     response = client.chat.completions.create(
