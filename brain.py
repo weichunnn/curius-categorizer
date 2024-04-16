@@ -1,31 +1,33 @@
-from typing import List
-import requests
-from openai import OpenAI
-from dotenv import load_dotenv
-import instructor
-from concurrent.futures import ProcessPoolExecutor, as_completed
-import streamlit as st
-
 import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
+import instructor
+import requests
+import streamlit as st
+from openai import OpenAI
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 logger = logging.getLogger(__name__)
 
 from pydantic import BaseModel
 
+
 class Snippet(BaseModel):
     id: int
-    topics: List[str]
+    topics: list[str]
+
 
 class Categorization(BaseModel):
-    snippets: List[Snippet]
+    snippets: list[Snippet]
 
-load_dotenv()
 
 API_BASE_URL = "https://curius.app/api"
 BATCH_SIZE = 50
 
-client = instructor.from_openai(OpenAI(api_key=st.secrets['OPENAI_API_KEY']))
+client = instructor.from_openai(OpenAI(api_key=st.secrets["OPENAI_API_KEY"]))
 
 HEADERS = {
     "Content-Type": "application/json",
@@ -45,6 +47,7 @@ def fetch_links(page, user_id):
         logger.error(f"Failed to fetch links for page {page}: {response.status_code}")
         return None
 
+
 def fetch_links_multiprocessing(user_id):
     """Fetches all links from the API using multiprocessing."""
     result = []
@@ -52,7 +55,10 @@ def fetch_links_multiprocessing(user_id):
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Start with an initial set of pages
-        future_to_page = {executor.submit(fetch_links, page, user_id): page for page in range(max_workers)}
+        future_to_page = {
+            executor.submit(fetch_links, page, user_id): page
+            for page in range(max_workers)
+        }
         next_page = max_workers  # The next page number to fetch
 
         while future_to_page:
@@ -66,15 +72,18 @@ def fetch_links_multiprocessing(user_id):
                         continue
                     result.extend(data)
                     # Submit the next page in sequence
-                    future_to_page[executor.submit(fetch_links, next_page, user_id)] = next_page
+                    future_to_page[executor.submit(fetch_links, next_page, user_id)] = (
+                        next_page
+                    )
                     next_page += 1
                 except Exception as exc:
-                    logger.error(f'Page {page} generated an exception: {exc}')
+                    logger.error(f"Page {page} generated an exception: {exc}")
                 # Remove the future that has completed
                 del future_to_page[future]
 
     st.toast(f"Fetched {len(result)} links with topics")
     return result
+
 
 def fetch_links_without_topics(user_id):
     """Fetches all links from the API"""
@@ -102,18 +111,18 @@ def categorize_text(texts, topics) -> Categorization:
     """Uses OpenAI to classify multiple texts in a single API call by comparing with existing topics, expects structured output"""
 
     prompt = f"""
-      Given the following topics: {topics}. 
+      Given the following topics: {topics}.
 
       What topics best match each of these texts? If there are existing topics, retain it in the final result.
 
       **Criteria**
       - Each snippet MUST have at least 1 topic.
       - Create a new topic if existing input topics do not fit.
-      - At most 3 topics can be assigned. 
-      
+      - At most 3 topics can be assigned.
+
       **Result**
       - Only return the results that have changes
-      
+
       Please list the results in a python array format to be used for post-processing:
       [(id, [topic1, topic2]), (id, [topic])]
 
@@ -123,7 +132,7 @@ def categorize_text(texts, topics) -> Categorization:
     response = client.chat.completions.create(
         model="gpt-4-turbo",
         messages=[{"role": "user", "content": prompt}],
-        response_model=Categorization
+        response_model=Categorization,
     )
     return response
 
@@ -147,7 +156,7 @@ def update_link(link_id, topics):
 def process(user_id, empty_links=True, progress=None):
     links = fetch_links_multiprocessing(user_id)
     if empty_links:
-        links = [link for link in links if not link.get('topics')]
+        links = [link for link in links if not link.get("topics")]
 
     topics = fetch_topics(user_id)
     existing_topics = [topic["topic"] for topic in topics]
@@ -162,9 +171,13 @@ def process(user_id, empty_links=True, progress=None):
     for i in range(0, len(links), BATCH_SIZE):
         if progress and i != 0:
             progress_value = i // BATCH_SIZE / total_batches
-            progress.progress(progress_value, text="Calling OpenAI to categorize your links")
+            progress.progress(
+                progress_value, text="Calling OpenAI to categorize your links"
+            )
 
-        st.toast(f"Processing batch {i//BATCH_SIZE + 1} of {len(links)//BATCH_SIZE + 1}")
+        st.toast(
+            f"Processing batch {i//BATCH_SIZE + 1} of {len(links)//BATCH_SIZE + 1}"
+        )
         batch_links = links[i : i + BATCH_SIZE]
         link_details = [
             {
