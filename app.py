@@ -33,6 +33,12 @@ def main():
     if "results" not in st.session_state:
         st.session_state.results = None
 
+    st.write("#")
+
+    st.info(
+        "This button is safe! You will be prompted again if you decide to update your topics",
+        icon="ℹ️",
+    )
     if st.button("Extract and Categorize Links"):
         st.write("#")
         st.info(
