@@ -140,8 +140,8 @@ def update_link(link_id, topics, token):
         f"{API_BASE_URL}/links/{link_id}/topics",
         json={"topics": topics},
         headers={
-        "Content-Type": "application/json",
-        "Authorization": token,
+            "Content-Type": "application/json",
+            "Authorization": token,
         },
     )
 
@@ -154,7 +154,7 @@ def update_link(link_id, topics, token):
 
 
 def process(user_id, empty_links=True, progress=None):
-    links = fetch_links_multiprocessing(user_id)[:10]
+    links = fetch_links_multiprocessing(user_id)
     if empty_links:
         links = [link for link in links if not link.get("topics")]
 
