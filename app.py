@@ -79,17 +79,18 @@ def main():
             HEADERS["Authorization"] = auth_token
 
             # Initialize the progress bar
-            progress_bar = st.progress(0, text='Working hard')
+            progress_bar = st.progress(0, text="Working hard")
             total = len(df_results)
             for index, result in enumerate(df_results.iterrows()):
                 response = update_link(result[1]["id"], result[1]["topics"])
                 if not response:
                     st.error(f"Failed to update topics for link ID {result[1]['id']}.")
 
-                progress_bar.progress((index + 1) / total, text='Working hard')
+                progress_bar.progress((index + 1) / total, text="Working hard")
 
             st.success("All topics updated.")
             st.snow()
+
 
 if __name__ == "__main__":
     main()
