@@ -34,7 +34,7 @@ def main():
         if st.session_state.results:
             st.balloons()
             st.success("Links fetched and topics categorized successfully!")
-            st.success(f"Total of {len(st.session_state.results)} processed!")
+            st.success(f"Total of {len(st.session_state.results)} links processed!")
     
     if st.session_state.results:
         df_results = pd.DataFrame(st.session_state.results)

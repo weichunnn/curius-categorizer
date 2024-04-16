@@ -190,5 +190,4 @@ def process(user_id, empty_links=True, progress=None):
         progress.progress(1.0)
 
     result = list(link_details_dict.values())
-    st.toast(f"Processed total of {len(result)} links.", icon='🎉')
     return result
