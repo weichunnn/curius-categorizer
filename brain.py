@@ -31,7 +31,7 @@ client = instructor.from_openai(OpenAI(api_key=st.secrets['OPENAI_API_KEY']))
 
 HEADERS = {
     "Content-Type": "application/json",
-    "Authorization": os.getenv('AUTHORIZATION_TOKEN'),
+    "Authorization": "REPLACE_WITH_YOUR_OWN",
 }
 
 
