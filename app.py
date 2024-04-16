@@ -5,15 +5,23 @@ from brain import process, update_link
 def main():
     st.title("Link Topic Categorizer")
 
-    user_id = st.text_input("Enter your User ID", "0000")
-    empty_links = st.radio("Process empty links only?", ("Yes", "No"), index=0)
+    # Added help text to the User ID input
+    user_id = st.text_input("Enter your User ID", "0000", help="Type your unique user ID here. If unsure, use the default value.")
+
+    # Added help text to the radio button
+    empty_links = st.radio(
+        "Process empty links only?",
+        ("Yes", "No"),
+        index=0,
+        help="Select 'Yes' to process only the links with no assigned topics. Select 'No' to process all links."
+    )
     empty_links_bool = empty_links == "Yes"
 
     # Load or initialize session state
     if 'results' not in st.session_state:
         st.session_state.results = None
 
-    if st.button("Fetch and Categorize Links"):        
+    if st.button("Fetch and Categorize Links"):
         global USER_ID
         USER_ID = int(user_id)
 
@@ -35,7 +43,8 @@ def main():
           hide_index=True,
       )
 
-        auth_token = st.text_area("Enter your Authorization Token to update topics")
+        # Added help text to the Authorization Token input area
+        auth_token = st.text_area("Enter your Authorization Token to update topics", help="Paste your authorization token here to enable topic updates ie Bearer XXX")
 
         if st.button("Update Topics"):
             global HEADERS
