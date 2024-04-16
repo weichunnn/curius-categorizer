@@ -23,7 +23,6 @@ class Categorization(BaseModel):
 load_dotenv()
 
 API_BASE_URL = "https://curius.app/api"
-USER_ID = 0000
 BATCH_SIZE = 50
 
 client = instructor.from_openai(OpenAI(api_key=st.secrets['OPENAI_API_KEY']))
@@ -34,9 +33,9 @@ HEADERS = {
 }
 
 
-def fetch_links(page):
+def fetch_links(page, user_id):
     """Fetches a single page of links."""
-    response = requests.get(f"{API_BASE_URL}/users/{USER_ID}/links?page={page}")
+    response = requests.get(f"{API_BASE_URL}/users/{user_id}/links?page={page}")
     if response.status_code == 200:
         data = response.json()["userSaved"]
         if not data:
@@ -46,14 +45,14 @@ def fetch_links(page):
         logger.error(f"Failed to fetch links for page {page}: {response.status_code}")
         return None
 
-def fetch_links_multiprocessing():
+def fetch_links_multiprocessing(user_id):
     """Fetches all links from the API using multiprocessing."""
     result = []
     max_workers = 10  # Adjust based on your system and network capacity
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Start with an initial set of pages
-        future_to_page = {executor.submit(fetch_links, page): page for page in range(max_workers)}
+        future_to_page = {executor.submit(fetch_links, page, user_id): page for page in range(max_workers)}
         next_page = max_workers  # The next page number to fetch
 
         while future_to_page:
@@ -67,7 +66,7 @@ def fetch_links_multiprocessing():
                         continue
                     result.extend(data)
                     # Submit the next page in sequence
-                    future_to_page[executor.submit(fetch_links, next_page)] = next_page
+                    future_to_page[executor.submit(fetch_links, next_page, user_id)] = next_page
                     next_page += 1
                 except Exception as exc:
                     logger.error(f'Page {page} generated an exception: {exc}')
@@ -77,9 +76,9 @@ def fetch_links_multiprocessing():
     st.toast(f"Fetched {len(result)} links with topics")
     return result
 
-def fetch_links_without_topics():
+def fetch_links_without_topics(user_id):
     """Fetches all links from the API"""
-    response = requests.get(f"{API_BASE_URL}/users/{USER_ID}/searchLinks")
+    response = requests.get(f"{API_BASE_URL}/users/{user_id}/searchLinks")
     if response.status_code == 200:
         result = response.json()["links"]
         logger.info(f"Fetched {len(result)} links")
@@ -89,9 +88,9 @@ def fetch_links_without_topics():
         return []
 
 
-def fetch_topics():
+def fetch_topics(user_id):
     """Fetches all topics from the API"""
-    response = requests.get(f"{API_BASE_URL}/user/topics?uid={USER_ID}")
+    response = requests.get(f"{API_BASE_URL}/user/topics?uid={user_id}")
     if response.status_code == 200:
         return response.json()["topics"]
     else:
@@ -145,12 +144,12 @@ def update_link(link_id, topics):
     return response.json()
 
 
-def process(empty_links=True, progress=None):
-    links = fetch_links_multiprocessing()
+def process(user_id, empty_links=True, progress=None):
+    links = fetch_links_multiprocessing(user_id)
     if empty_links:
         links = [link for link in links if not link.get('topics')]
 
-    topics = fetch_topics()
+    topics = fetch_topics(user_id)
     existing_topics = [topic["topic"] for topic in topics]
     current_topics = set(existing_topics)
 
