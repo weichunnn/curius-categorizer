@@ -154,7 +154,7 @@ def update_link(link_id, topics, token):
 
 
 def process(user_id, empty_links=True, progress=None):
-    links = fetch_links_multiprocessing(user_id)[:100]
+    links = fetch_links_multiprocessing(user_id)[:50]
     if empty_links:
         links = [link for link in links if not link.get("topics")]
 
