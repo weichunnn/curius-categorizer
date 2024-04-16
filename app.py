@@ -74,15 +74,11 @@ def main():
         )
 
         if st.button("Update Topics"):
-            global HEADERS
-            HEADERS = {}
-            HEADERS["Authorization"] = auth_token
-
             # Initialize the progress bar
             progress_bar = st.progress(0, text="Working hard")
             total = len(df_results)
             for index, result in enumerate(df_results.iterrows()):
-                response = update_link(result[1]["id"], result[1]["topics"])
+                response = update_link(result[1]["id"], result[1]["topics"], auth_token)
                 if not response:
                     st.error(f"Failed to update topics for link ID {result[1]['id']}.")
 

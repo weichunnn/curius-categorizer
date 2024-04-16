@@ -7,7 +7,7 @@ import streamlit as st
 from openai import OpenAI
 from pydantic import BaseModel
 
-from constant import API_BASE_URL, BATCH_SIZE, HEADERS, PARALLEL_WORKER_COUNT
+from constant import API_BASE_URL, BATCH_SIZE, PARALLEL_WORKER_COUNT
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -134,24 +134,27 @@ def categorize_text(texts, topics) -> Categorization:
     return response
 
 
-def update_link(link_id, topics):
+def update_link(link_id, topics, token):
     """Updates the topics associated with a specific link."""
     response = requests.put(
         f"{API_BASE_URL}/links/{link_id}/topics",
         json={"topics": topics},
-        headers=HEADERS,
+        headers={
+        "Content-Type": "application/json",
+        "Authorization": token,
+        },
     )
 
     if response.status_code == 200:
-        print("Topics updated successfully.")
+        logger.info("Topics updated successfully.")
+        return response.json()
     else:
-        print(f"Failed to update topics: {response.status_code}")
-
-    return response.json()
+        logger.error(f"Failed to update topics: {response.status_code}")
+        return None
 
 
 def process(user_id, empty_links=True, progress=None):
-    links = fetch_links_multiprocessing(user_id)
+    links = fetch_links_multiprocessing(user_id)[:10]
     if empty_links:
         links = [link for link in links if not link.get("topics")]
 
