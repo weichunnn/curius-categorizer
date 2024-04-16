@@ -3,9 +3,13 @@ import pandas as pd
 from brain import process, update_link
 
 def main():
-    st.title("Link Topic Categorizer")
+    st.set_page_config(page_title="Curius Link Categorizer")
+    
+    st.image('images/shelves.png', caption='Books on a Shelf')
+    st.title("Curius Categorizer")
+    st.write("This application helps you categorize your links effectively and efficiently. Simply enter your User ID, choose your preferences, and let the app do the rest!")
 
-    # Added help text to the User ID input
+    st.header("User Configuration")
     user_id = st.text_input("Enter your User ID", "0000", help="Type your unique user ID here. If unsure, use the default value.")
 
     # Added help text to the radio button
@@ -21,16 +25,19 @@ def main():
     if 'results' not in st.session_state:
         st.session_state.results = None
 
-    if st.button("Fetch and Categorize Links"):
+    if st.button("Extract and Categorize Links"):
         global USER_ID
         USER_ID = int(user_id)
 
-        progress_bar = st.progress(0) 
+        st.write('#')
+        st.info('This might take a while depending on OpenAI - go have some rest and come back!', icon="ℹ️")
+        progress_bar = st.progress(0, text='Fetching your details from Curius') 
         st.session_state.results = process(empty_links=empty_links_bool, progress=progress_bar)
 
         if st.session_state.results:
             st.balloons()
             st.success("Links fetched and topics categorized successfully!")
+            st.success(f"Total of {len(st.session_state.results)} processed!")
     
     if st.session_state.results:
         df_results = pd.DataFrame(st.session_state.results)

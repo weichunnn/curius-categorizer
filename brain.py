@@ -1,4 +1,3 @@
-import os
 from typing import List
 import requests
 from openai import OpenAI
@@ -24,7 +23,7 @@ class Categorization(BaseModel):
 load_dotenv()
 
 API_BASE_URL = "https://curius.app/api"
-USER_ID = 2922
+USER_ID = 0000
 BATCH_SIZE = 50
 
 client = instructor.from_openai(OpenAI(api_key=st.secrets['OPENAI_API_KEY']))
@@ -75,7 +74,7 @@ def fetch_links_multiprocessing():
                 # Remove the future that has completed
                 del future_to_page[future]
 
-    logger.info(f"Fetched {len(result)} links with topics")
+    st.toast(f"Fetched {len(result)} links with topics")
     return result
 
 def fetch_links_without_topics():
@@ -164,7 +163,7 @@ def process(empty_links=True, progress=None):
             progress_value = i // BATCH_SIZE / total_batches
             progress.progress(progress_value, text="Calling OpenAI to categorize your links")
 
-        logger.info(f"Processing batch {i//BATCH_SIZE + 1} of {len(links)//BATCH_SIZE + 1}")
+        st.toast(f"Processing batch {i//BATCH_SIZE + 1} of {len(links)//BATCH_SIZE + 1}")
         batch_links = links[i : i + BATCH_SIZE]
         link_details = [
             {
@@ -192,5 +191,5 @@ def process(empty_links=True, progress=None):
         progress.progress(1.0)
 
     result = list(link_details_dict.values())
-    logger.info(f"Processed total of {len(result)} links.")
+    st.toast(f"Processed total of {len(result)} links.", icon='🎉')
     return result
