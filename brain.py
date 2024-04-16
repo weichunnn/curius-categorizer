@@ -153,6 +153,8 @@ def process(user_id, empty_links=True, progress=None):
     existing_topics = [topic["topic"] for topic in topics]
     current_topics = set(existing_topics)
 
+    progress.progress(0.1, text="Calling OpenAI to categorize your links")
+
     link_details_dict = {}
     hallucination_count = 0
     total_batches = (len(links) + BATCH_SIZE - 1) // BATCH_SIZE
