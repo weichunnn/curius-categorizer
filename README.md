@@ -22,4 +22,5 @@ So I created this to help myself with it.
 ![authorization token](./images/authorization.png)
 
 ### Using the app
-![app](./images/app.png)
+![app](./images/app1.png)
+![app](./images/app2.png)
