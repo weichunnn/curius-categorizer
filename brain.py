@@ -27,7 +27,7 @@ API_BASE_URL = "https://curius.app/api"
 USER_ID = 2922
 BATCH_SIZE = 50
 
-client = instructor.from_openai(OpenAI(st.secrets['OPENAI_API_KEY']))
+client = instructor.from_openai(OpenAI(api_key=st.secrets['OPENAI_API_KEY']))
 
 HEADERS = {
     "Content-Type": "application/json",
