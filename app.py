@@ -68,9 +68,11 @@ def main():
         )
 
         # Added help text to the Authorization Token input area
-        auth_token = st.text_area(
+        auth_token = st.text_input(
             "Enter your Authorization Token to update topics",
             help="Paste your authorization token here to enable topic updates ie Bearer XXX",
+            type='password'
+
         )
 
         if st.button("Update Topics"):
